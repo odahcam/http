@@ -1,0 +1,21 @@
+{
+    "name": "odahcam/router",
+    "description": "Smart PHP route resolver.",
+    "type": "package",
+    "license": "Apache License 2.0",
+    "authors": [
+        {
+            "name": "Luiz Machado",
+            "email": "machado@odahcam.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "league/uri-parser": "^1.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "": "src/"
+        }
+    }
+}
