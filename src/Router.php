@@ -53,6 +53,61 @@ class Router
     }
 
     /**
+     * @param {string} $url
+     * @return {string}
+     */
+    private static function get_request_uri_from_url(string $url)
+    {
+        if (!$this->URL_BASE) {
+            throw new Exception('URL base não definida. Não é possível recuperar o URI da requisição precisamente sem a URL base.', 1);
+        }
+
+        return str_replace(trim($this->URL_BASE, '/'), '', trim($url, '/'));
+    }
+
+    /**
+     * @param {string} $uri
+     * @return {array}
+     */
+    private static function get_segmented_request_uri(string $url)
+    {
+        return array_values(array_filter(explode('/', $url)));
+    }
+
+    /**
+    * Inicia um buffer (acumulador) que armazena todo o output do servidor e impede que o mesmo seja enviado como response ao requisitante (e.g.: browser)
+    * @see http://php.net/manual/en/function.ob-start.php
+    * @author odahcam
+    * @param {callable} $output_callback = NULL
+    * @param {int} $chunk_size = 0
+    * @param {int} $flags = PHP_OUTPUT_HANDLER_STDFLAGS
+    * @return Returns TRUE on success or FALSE on failure.
+    */
+    public static function buffer_start(callable $output_callback = null, $chunk_size = 0, $flags = PHP_OUTPUT_HANDLER_STDFLAGS)
+    {
+        return ob_start($output_callback, $chunk_size, $flags);
+    }
+
+    /**
+    * Stops the PHP buffer, so the response are free to go.
+    * @author odahcam
+    * @see http://php.net/manual/en/function.ob-end-flush.php
+    * @return Returns TRUE on success or FALSE on failure. Reasons for failure are first that you called the function without an active buffer or that for some reason a buffer could not be deleted (possible for special buffer).
+    */
+    public static function buffer_stop()
+    {
+        return ob_end_flush();
+    }
+
+    /**
+     * Function that removes double slashes _from strings.
+     */
+    public static function remove_double_slashes(string $url)
+    {
+        return preg_replace('~(?<!\:)/{2}~', '/', $url);
+    }
+
+    /**
     * Loads and sets a controller to run based on a friendly _request REQUEST_URI.
     *
     * @author odahcam
@@ -139,60 +194,5 @@ class Router
 
             // debug($path);
         }
-    }
-
-    /**
-     * Function that removes double slashes _from strings.
-     */
-    public static function remove_double_slashes(string $url)
-    {
-        return preg_replace('~(?<!\:)/{2}~', '/', $url);
-    }
-
-    /**
-     * @param {string} $url
-     * @return {string}
-     */
-    private static function get_request_uri_from_url(string $url)
-    {
-        if (!$this->URL_BASE) {
-            throw new Exception('URL base não definida. Não é possível recuperar o URI da requisição precisamente sem a URL base.', 1);
-        }
-
-        return str_replace(trim($this->URL_BASE, '/'), '', trim($url, '/'));
-    }
-
-    /**
-     * @param {string} $uri
-     * @return {array}
-     */
-    private static function get_segmented_request_uri(string $url)
-    {
-        return array_values(array_filter(explode('/', $url)));
-    }
-
-    /**
-    * Inicia um buffer (acumulador) que armazena todo o output do servidor e impede que o mesmo seja enviado como response ao requisitante (e.g.: browser)
-    * @see http://php.net/manual/en/function.ob-start.php
-    * @author odahcam
-    * @param {callable} $output_callback = NULL
-    * @param {int} $chunk_size = 0
-    * @param {int} $flags = PHP_OUTPUT_HANDLER_STDFLAGS
-    * @return Returns TRUE on success or FALSE on failure.
-    */
-    public static function buffer_start(callable $output_callback = null, $chunk_size = 0, $flags = PHP_OUTPUT_HANDLER_STDFLAGS)
-    {
-        return ob_start($output_callback, $chunk_size, $flags);
-    }
-
-    /**
-    * Stops the PHP buffer, so the response are free to go.
-    * @author odahcam
-    * @see http://php.net/manual/en/function.ob-end-flush.php
-    * @return Returns TRUE on success or FALSE on failure. Reasons for failure are first that you called the function without an active buffer or that for some reason a buffer could not be deleted (possible for special buffer).
-    */
-    public static function buffer_stop()
-    {
-        return ob_end_flush();
     }
 }
