@@ -195,15 +195,4 @@ class Router
     {
         return ob_end_flush();
     }
-
-    /**
-    * Allows the _request to be temporary redirected
-    * @param {string} $uri
-    * @param {int} $status
-    */
-    public static function redirect(string $uri, $status = 302)
-    {
-        // @TODO: remover isso, isso aqui é coisa de controller
-        header('Location: '.$this->URL_BASE.$uri, true, $status);
-    }
 }
