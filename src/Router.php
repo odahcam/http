@@ -2,6 +2,8 @@
 
 namespace Odahcam;
 
+use \Psr\Http\Message\ServerRequestInterface as Request;
+
 class Router
 {
     /**
@@ -55,11 +57,12 @@ class Router
     /**
      * @param {string} $url
      * @return {string}
+     * @throws \Exception
      */
     private static function get_request_uri_from_url(string $url)
     {
         if (!$this->URL_BASE) {
-            throw new Exception('URL base não definida. Não é possível recuperar o URI da requisição precisamente sem a URL base.', 1);
+            throw new \Exception('URL base não definida. Não é possível recuperar o URI da requisição precisamente sem a URL base.', 1);
         }
 
         return str_replace(trim($this->URL_BASE, '/'), '', trim($url, '/'));
@@ -112,61 +115,68 @@ class Router
     *
     * @author odahcam
     *
-    * @param {string} $request_path
+    * @param {string} $request_path_segments_path
     *
     * @return bool
     **/
-    public function resolve(string $request_path)
+    public function resolve(Request $request)
     {
-        $request = self::get_segmented_request_uri($request_path);
+        $request_path = $request->getUri()->getPath();
+        $request_path_segments = self::get_segmented_request_uri($request_path);
 
-        if (empty($request)) {
+        if (empty($request_path_segments)) {
             return null; // resolves to nothing.
         }
 
+        /**
+         * @var {string} $path : The class file path.
+         */
         $path = $this->controller_path;
 
-        foreach ($request as $key => $segment) {
+        foreach ($request_path_segments as $key => $segment) {
             $path .= str_replace('-', '_', ucfirst($segment)); // treats segment name
 
             // debug($path, false, true);
 
-            unset($request[$key]);
+            unset($request_path_segments[$key]);
 
             switch (true) {
-                case is_file($path.'.php'):
-                    $ControllerName = $this->controller_namespace.ucfirst($segment); // $request[$key]
 
-                    // $arguments = $request; // the _request _from here
+                // NOTE: respeitar a ordem dos cases é importante para o resultado final
+
+                case is_file($path.'.php'):
+                    $class_path = $this->controller_namespace.ucfirst($segment);
 
                     try {
-                        if (class_exists($ControllerName)) {
-                            $Controller =   new $ControllerName();
+                        if (class_exists($class_path)) {
+                            $controller_obj = new $class_path();
                         }
                     } catch (Exception $e) {
-                        die('Houve um erro ao carregar o Controller '.$Controller.': '.$e->getMessage());
+                        die('Houve um erro ao carregar o Controller '.$controller_obj.': '.$e->getMessage());
                     }
 
-                    // die(var_dump($Controller));
+                    // die(var_dump($controller_obj));
 
-                    if ($Controller) {
+                    if ($controller_obj) {
                         $key_next = $key + 1;
-                        $method = isset($request[$key_next]) && !empty($request[$key_next]) ? $request[$key_next] : 'index';
-                        unset($request[$key_next]);
 
-                        // debug($Controller, false, true);
+                        /**
+                         * @var {string} $action : The controller's method name, this is the action to be taken.
+                         */
+                        $action = isset($request_path_segments[$key_next]) && !empty($request_path_segments[$key_next]) ? $request_path_segments[$key_next] : 'index';
 
-                        if (method_exists($Controller, $method)) {
+                        unset($request_path_segments[$key_next]);
 
-                            // header("HTTP/1.0 200 OK");
-                            // header("HTTP/1.1 200 OK");
+                        // debug($controller_obj, false, true);
+
+                        if (method_exists($controller_obj, $action)) {
 
                             try {
                                 // stops buffer and let the user be free
-                                // return self::buffer_stop() && call_user_func_array([$Controller, $method], $request);
-                                return call_user_func_array([$Controller, $method], $request);
+                                // return self::buffer_stop() && call_user_func_array([$controller_obj, $action], $request_path_segments);
+                                return call_user_func_array([$controller_obj, $action], $request_path_segments);
                             } catch (Exception $e) {
-                                die('Houve um erro ao carregar o método '.$method.' no controller '.$ControllerName.': '.$e->getMessage());
+                                die('Houve um erro ao carregar o método '.$action.' no controller '.$class_path.': '.$e->getMessage());
                             }
                         } else {
                             header("HTTP/1.0 404 Not Found");
