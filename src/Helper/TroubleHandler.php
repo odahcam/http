@@ -1,6 +1,6 @@
 <?php
 
-namespace Odahcam\Helper;
+namespace Odahcam\Http\Helper;
 
 /**
  * @author odahcam
