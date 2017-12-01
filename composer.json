@@ -1,8 +1,8 @@
 {
-	"name": "odahcam/router",
+	"name": "odahcam/http",
 	"description": "Smart PHP route resolver.",
 	"type": "package",
-    "version": "0.1.0",
+    	"version": "0.0.1",
 	"license": "Apache License 2.0",
 	"authors": [{
 		"name": "Luiz Machado",
@@ -10,14 +10,14 @@
 	}],
 	"minimum-stability": "dev",
 	"require": {
-        "php": "^7.1"
+        	"php": "^7.1"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^3.7"
 	},
 	"autoload": {
 		"psr-4": {
-			"Odahcam\\": "src/"
+			"Odahcam\\Http": "src/"
 		}
 	}
 }
