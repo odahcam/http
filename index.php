@@ -2,4 +2,4 @@
 
 require './vendor/autoload.php';
 
-new \Odahcam\Router();
+new \Odahcam\Http\Router();
