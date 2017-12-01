@@ -1,6 +1,6 @@
 <?php
 
-namespace Odahcam;
+namespace Odahcam\Http;
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 
